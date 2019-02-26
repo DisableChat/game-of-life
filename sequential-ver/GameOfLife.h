@@ -8,12 +8,13 @@
 #include <vector>
 using namespace std;
 
-const int OVER_POPULATION = 4;
-const int LONELINESS_0    = 0;
-const int LONELINESS_1    = 1;
-const int ALIVE_TWO       = 2;
-const int RESPAWN         = 3;
-
+//******************************************************************************
+//  Class:        GameOfLife
+//    Public:     func SimulateLife()
+//                fun neighbor_val()
+//    Private:    None
+// Description:   Class that is used to represent the game of life
+//******************************************************************************
 class GameOfLife
 {
   public:
@@ -21,27 +22,43 @@ class GameOfLife
     int neighbor_val(int i, int j, vector<vector<int> > &old_board);
   };
 
-
+//******************************************************************************
+// Function:      StimulateLife()
+// Arguments:     vector<vector<int> > &board
+//                int life_cycles
+// Description:   Update the matrix surviving population based on rules of
+//                game of life. Then update the orginal board based on # of
+//                life cycles
+//******************************************************************************
 vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int life_cycles)
 {
 
   int n = board.size();
+  // Declaring old board and setting that equal to the passed in board
   vector<vector<int> > old_board;
   old_board = board;
 
+  // Life cycle loop
   for(int times = 0; times < life_cycles; times++)
   {
+    // Every life cycle we declare a fresh board and set that equal to
+    // the old board
     vector<vector<int> > new_board;
     new_board = old_board;
+
+    // Double forloop for checking each grid locations neighbors
     for(int i = 0; i < n; i++)
     {
       for(int j = 0; j < n; j++)
       {
-        // if not eternal check neighbors
         int Ncount = 0;
-        // checking the surrounding 8 neighbors
+
+        // If not eternal check neighbors -> where eternal neighbors never
+        // die so there is no reason to update their values
         if (old_board[i][j] != 2)
         {
+          // checking the surrounding 8 neighbors and updating population
+          // count each time we find a living person
           Ncount += neighbor_val( (n + i + 1) % n, j, old_board);
           Ncount += neighbor_val( (n + i - 1) % n, j, old_board);
           Ncount += neighbor_val( (n + i - 1) % n, (n + j + 1) % n, old_board);
@@ -51,34 +68,47 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
           Ncount += neighbor_val( i, (n + j + 1) % n, old_board);
           Ncount += neighbor_val( i, (n + j - 1) % n, old_board);
 
-          if(Ncount >= 4){new_board[i][j] = 0;}
-          else if(Ncount == 0 || Ncount == 1){new_board[i][j] = 0;}
-          else if(Ncount == 2)
+          // Based on the neighbor count the person either dies or lives, or
+          // is born
+          // 4 or greater                       = death
+          // 0 or 1                             = death
+          // 2 and the cells current value = 0  = remain dead
+          // 2 and the cells current value = 1  = remain alive
+          // 3 and the cells current value = 1  = remain alive
+          // 3 and current cell value = 0       = reborn aka alive
+          if(Ncount >= 4)
           {
-            if(old_board[i][j] == 0){new_board[i][j] = 0;}
-            if(old_board[i][j] == 1){new_board[i][j] = 1;}
+            new_board[i][j] = 0;
           }
-          else if(Ncount == 3)
+          else if(Ncount == 0 || Ncount == 1)
           {
-            if(old_board[i][j] == 0){new_board[i][j] = 1;}
-            else if (old_board[i][j] == 1){new_board[i][j] == 1;}
+            new_board[i][j] = 0;
+          }
+          else if(Ncount == 2 && old_board[i][j] == 1)
+          {
+            new_board[i][j] = 1;
+          }
+          else if(Ncount == 3 && old_board[i][j] == 0)
+          {
+            new_board[i][j] = 1;
           }
         }
       }
     }
-    for (int i=0;i<n;i++) {
-      for (int j=0;j<n;j++) {
-        cout << new_board[i][j] << " ";
-      }
-      cout << endl;
-    }
-    cout << endl;
+    // Updating old board to new board for next "life cycle"
     old_board = new_board;
   }
   return old_board;
 }
 
 
+//******************************************************************************
+// Function:      neighbor_val()
+// Arguments:     int i
+//                int j
+//                vector<vector<int> > &old_board
+// Description:   Calculates the number of neighbors relative to current cell
+//******************************************************************************
 int GameOfLife::neighbor_val(int i, int j, vector<vector<int> > &old_board)
 {
   int tmp = 0;
