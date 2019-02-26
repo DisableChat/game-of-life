@@ -1,7 +1,9 @@
 //******************************************************************************
 // File:          GameOfLife.h
 // Author:        Wesley Ryder
-// Description:
+// Description:   Class implmentation for the GameOfLife, where this class
+//                simply updates the matrix based on the logic of GameOfLife
+//                with the twist eternal cells can exist
 //******************************************************************************
 
 #include <iostream>
