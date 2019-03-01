@@ -3,7 +3,8 @@
 // Author:        Wesley Ryder
 // Description:   Class implmentation for the GameOfLife, where this class
 //                simply updates the matrix based on the logic of GameOfLife
-//                with the twist eternal cells can exists Paralell version
+//                with the twist eternal cells can exists
+//                *** Paralell version implementation ***
 //******************************************************************************
 
 #include <iostream>
@@ -20,7 +21,7 @@ int neighbor_val(int i, int j, vector<vector<int> > &old_board);
 //******************************************************************************
 //  Class:        GameOfLife
 //    Public:     func SimulateLife()
-//                fun neighbor_val()
+//                func SimulateLife_parallel()
 //    Private:    None
 // Description:   Class that is used to represent the game of life
 //******************************************************************************
@@ -37,8 +38,6 @@ class GameOfLife
                                             vector<pthread_barrier_t> &layer_two);
   };
 
-
-
 //******************************************************************************
 // Function:      StimulateLife()
 // Arguments:     vector<vector<int> > &board
@@ -49,8 +48,15 @@ class GameOfLife
 //******************************************************************************
 vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int life_cycles)
 {
+
+  // Declaring the number of threads
   int Nthreads  = 4;
+  // Declaring thread id which we just incrmeent as we go to next thread
   int tid       = 0;
+
+  // Setting new_board to old board for the threads to manipulate
+  vector<vector<int> > new_board;
+  new_board = board;
 
   // Declaring pthread_barrier_t layer_one and layer_two
   vector<pthread_barrier_t> layer_one;
@@ -67,9 +73,8 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
     pthread_barrier_init(&layer_two[i], NULL, Nthreads);
   }
 
-  vector<vector<int> > new_board;
-  new_board = board;
-
+  // Declaring the threads
+  // Thread 1
   future<void> X1 = async(launch::async,
                           SimulateLife_parallel,
                           ref(board),
@@ -80,6 +85,7 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
                           ref(layer_one),
                           ref(layer_two));
 
+  // Thread 2
   future<void> X2 = async(launch::async,
                           SimulateLife_parallel,
                           ref(board),
@@ -90,6 +96,7 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
                           ref(layer_one),
                           ref(layer_two));
 
+  // Thread 3
   future<void> X3 = async(launch::async,
                           SimulateLife_parallel,
                           ref(board),
@@ -100,6 +107,7 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
                           ref(layer_one),
                           ref(layer_two));
 
+  // Thread 4
   future<void> X4 = async(launch::async,
                           SimulateLife_parallel,
                           ref(board),
@@ -115,12 +123,14 @@ vector<vector<int> > GameOfLife::SimulateLife(vector<vector<int> > &board, int l
 //******************************************************************************
 // Function:      StimulateLife_parallel()
 // Arguments:     vector<vector<int> > &board
+//                vector<vector<int> > &board
 //                int life_cycles
 //                int tid
 //                int Nthreads
-// Description:   Update the matrix surviving population based on rules of
-//                game of life. Then update the orginal board based on # of
-//                life cycles
+//                vector<pthread_barrier_t> &layer_one
+//                vector<pthread_barrier_t> &layer_two
+// Description:   SimulateLife_parallel essentially just is updating the
+//                "new_board" except each thread is doing a section ie the row.
 //******************************************************************************
 void GameOfLife::SimulateLife_parallel(vector<vector<int> > &board,
                                         vector<vector<int> > &new_board,
@@ -184,9 +194,12 @@ void GameOfLife::SimulateLife_parallel(vector<vector<int> > &board,
         }
       }
     }
+
+    // Setting the barrier waits so board is all synced up values
     pthread_barrier_wait(&layer_one[times]);
     // Updating old board to new board for next "life cycle"
     board = new_board;
+    // Setting the barrier waits so board is all synced up values
     pthread_barrier_wait(&layer_two[times]);
   }
 }
