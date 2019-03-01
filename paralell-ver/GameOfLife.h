@@ -146,6 +146,10 @@ void GameOfLife::SimulateLife_parallel(vector<vector<int> > &board,
   for(int times = 0; times < life_cycles; times++)
   {
     // Double forloop for checking each grid locations neighbors
+    // except this time the itterator will be the starting val of the
+    // current thread id (tid) which we then increment by the # of threads
+    // This allows for each thread to do pieces of the whole matrix and updates
+    // the matrix in real time
     for(int i = tid; i < n; i+= Nthreads)
     {
       for(int j = 0; j < n; j++)
