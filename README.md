@@ -9,3 +9,10 @@ Sequential and Parallel verisions
   ./a.out < Test-Data/<"___".dat>
   ```
 ## Parallel
+  For a party Enter:
+  ```
+  g++ -std=c++11 Test_Harness.cc -pthread
+  ./a.out Test-Data/<___.dat>
+  ```
+  *note* parallel is more efficient in cases for larger matrix's ie.  
+   100x100, 1000x1000 etc.
